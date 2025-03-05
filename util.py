@@ -1,11 +1,15 @@
-from openai import OpenAI
+import os
 import openai
 import pdfplumber
 import json
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = OpenAI(
     base_url="https://api.deepseek.com/",
-    api_key=""
+    api_key=os.environ.get("OPENAI_KEY")
 )
 
 def extract_text_from_pdf(pdf_path):
