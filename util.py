@@ -8,9 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = OpenAI(
-    base_url="https://api.deepseek.com/",
+    #base_url="https://api.deepseek.com/",
     api_key=os.environ.get("OPENAI_KEY")
-)
+    #api_key=os.environ.get("DEEPSEEK_KEY")
+    )
+
 
 def extract_text_from_pdf(pdf_path):
     full_text = ""
@@ -25,6 +27,38 @@ def extract_text_from_pdf(pdf_path):
         print(f"提取PDF文字时出错: {e}")
         return None
     return full_text
+
+# AGENT1: TASK DECOPOSITION ASSISTANT
+# Define the function to generate subtasks
+# AGENT1: TASK DECOPOSITION ASSISTANT
+# Define the function to generate subtasks
+
+def generate_title(text):
+    system_prompt = """
+    You are a naming assistant. Your task is to create concise, clear, and brief infographic titles based on provided sentences. The title should be simple, direct, and suitable for an infographic. 
+    Example:
+    Input:Death and casualties in World War II
+    Output:
+    World War II: Deaths & Casualties
+    """
+    user_prompt = f"""
+    Text: {text}
+    """
+
+    # Call the OpenAI API
+    completion = client.chat.completions.create(
+        model="gpt-4o",  # Use the appropriate model
+        #model = "deepseek-chat",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        stream=False
+    )
+
+    # Extract and return the subtasks
+    Title = completion.choices[0].message.content
+    return Title
 
 def generate_subtasks(text, question):
     # Prepare the prompt
@@ -46,13 +80,13 @@ def generate_subtasks(text, question):
         "subtask_title": "<A short title for the subtask>",
         "subtask_content": "<ALL relevant content from the text for this subtask>",
         "subtask_relation": "<The narrative logic relationship with the user's provided prompt>",
-        "related_subtask": [
+        "related_subtask":
           {
             "title": "<If there is a narrative logic relationship with any previous subtask, show the title of that specific subtask. Priority is given to the Subtask_title for determining the relationship, while Subtask_content is used only as supplementary information. If no narrative logic relationship is detected, return None.>",
             "relation": "<If there is a narrative logic relationship with any previous subtask, then state the narrative logic relationship with that subtask. Priority is given to the Subtask_title for determining the relationship, while Subtask_content is used only as supplementary information. If no narrative logic relationship is detected, return None.>"
-          }
+          },
         }
-      ]
+
     }
     Your output should following above structure in JSON format. Note: The total number of subtasks should NOT exceed 10.
 
@@ -191,7 +225,8 @@ def generate_subtasks(text, question):
 
     # Call the OpenAI API
     completion = client.chat.completions.create(
-        model="deepseek-chat",  # Use the appropriate model
+        model="gpt-4o",  # Use the appropriate model
+        #model = "deepseek-chat",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -206,6 +241,12 @@ def generate_subtasks(text, question):
     subtasks = completion.choices[0].message.content
     return subtasks
 
+#subtasks = generate_subtasks(extract_text_from_pdf("/mnt/disk2/jielin.feng/InfographicY/uploads/WorldWar2.pdf"), "Death in worldwar2")
+
+
+#AGENT2
+#AGENT2
+##"Knowledge_num":<num is the index of knowledge, e.g., Knowledge_1, Knowledge_2..>
 def generate_Knowledge(text):
 
     # Prepare the prompt
@@ -218,21 +259,40 @@ def generate_Knowledge(text):
     2. Difference: Explicit comparisons (e.g., "25% higher than").
     3. Proportion: Part-to-whole relationships (e.g., "28% of X", "1 in 10", "1/5").
     4. Trend: Time-bound changes (e.g., "grown by 40% annually", "increase", "decrease").
-    5. Categorization: Discrete classes (e.g., "Basic, Pro, Enterprise tiers").
+    5. Categorization: Must contain at leaset one discrete classes (e.g., "Basic, Pro, Enterprise tiers").
     6. Distribution: Data spread (e.g., "peaks at 20–34 years").
     7. Rank: Ordered hierarchy (e.g., "ranks first").
-    8. Association: Correlations (e.g., "linked to stress reduction").
     9. Extreme: Maxima/minima (e.g., "hottest month ever").
 
     For each data knowledge, output the results in JSON format:
     {
-      "Knowledge_num":<num is the index of knowledge, e.g., Knowledge_1, Knowledge_2..>
-      {
+      "Knowledge_num":(num is the index of knowledge, e.g., Knowledge_1, Knowledge_2..)
+      {[
         "Knowledge_content": "<Extracted knowledge content (summarize the knowledge based on insight simply, ensuring the data is included)>",
-        "Highlight": "<According to the knowledge_content, identify the key data points (words or numbers) that should be highlighted.>",
-        "Data_insight": "<Specify the type of information included in the knowledge_content (e.g., value, difference, proportion, trend, categorization, distribution, rank, association, extreme, outlier). Multiple types can be included.>"
-      }
+        "Data_insight": "<Specify the type of information included in the knowledge_content (value, difference, proportion, trend, categorization, distribution, rank, extreme).>"
+        "First_level_Highlight": "<According to the knowledge_content, identify the Most critical number/superlative.>",
+        "Second_level_Highlight": "<According to the knowledge_content, identify the Secondary contextual keyword> or null",
+        "Icon_Keyword": "<Single iconic noun from original knowledge_content text>",
+
+      ]}
    }
+
+   If no knowledge is detected, return null in following format:
+   {
+    "Knowledge_num":<num is the index of knowledge, e.g., Knowledge_1, Knowledge_2..> null,
+   }
+
+    Rule for First_level_Highlight:
+      - Must exist
+      - Multiple values comma-separated
+
+    Rule for Second_level_Highlight:
+      - Optional (return null if none)
+      - No overlap with First_level
+
+    Rule for Icon_Keyword:
+      - Must be original noun
+      - No modifications allowed
 
     Note:
       - Use strict JSON format for each insight.
@@ -243,22 +303,45 @@ def generate_Knowledge(text):
     Input:
       "The tragic Mumbai train bombing resulted in 189 deaths, leaving a devastating impact on countless families and communities. In addition to the fatalities, 700 individuals were injured, some of whom suffered life-altering wounds. The legal response to the attack included 5 death sentences, a stark reminder of the severity of the crime. Furthermore, 7 individuals were sentenced to life imprisonment, reflecting the gravity of their involvement in this heinous act of terrorism."
     Output:
-      knowledge1:
-        - Knowledge_content: 189 deaths.
-        - Highlight: 189
-        - Data_insight: Value
-      knowledge2:
-        - Knowledge_content: 5 death sentences.
-        - Highlight: 5
-        - Data_insight: Value
-      knowledge3:
-        - Knowledge_content: 700 injured.
-        - Highlight: 700
-        - Data_insight: Value
-      knowledge4:
-        - Knowledge_content: 7 life imprisonment sentences.
-        - Highlight: 7
-        - Data_insight: Value
+
+      {
+  "knowledge1": [
+    {
+      "Knowledge_content": "189 deaths.",
+      "Data_insight": "Value",
+      "First_level_Highlight": "189",
+      "Second_level_Highlight": null,
+      "Icon_Keyword": "deaths"
+    }
+  ],
+  "knowledge2": [
+    {
+      "Knowledge_content": "5 death sentences.",
+      "Data_insight": "Value",
+      "First_level_Highlight": "5",
+      "Second_level_Highlight": null,
+      "Icon_Keyword": "death sentences"
+    }
+  ],
+  "knowledge3": [
+    {
+      "Knowledge_content": "700 injured.",
+      "Data_insight": "Value",
+      "First_level_Highlight": "700",
+      "Second_level_Highlight": null,
+      "Icon_Keyword": "injured"
+    }
+  ],
+  "knowledge4": [
+    {
+      "Knowledge_content": "7 life imprisonment sentences.",
+      "Data_insight": "Value",
+      "First_level_Highlight": "700",
+      "Second_level_Highlight": null,
+      "Icon_Keyword": "imprisonment"
+    }
+  ]
+}
     """
 
     user_prompt = f"""
@@ -267,7 +350,8 @@ def generate_Knowledge(text):
 
     # Call the OpenAI API
     completion = client.chat.completions.create(
-        model="deepseek-chat",  # Use the appropriate model
+        #model="deepseek-chat",  # Use the appropriate model
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -305,25 +389,153 @@ def process_subtasks(subtasks):
 
         subtask_title = subtask.get("subtask_title", "")
         subtask_content = subtask.get("subtask_content", "")
+        subtask_relation = subtask.get("subtask_relation","")
+        related_subtask = subtask.get("related_subtask","")
 
         knowledge_result = generate_Knowledge(subtask_content)
 
         results.append({
             "subtitle": subtask_title,
+            "relation_withTitle": subtask_relation,
+            "relation_withVG": related_subtask,
             "knowledge": knowledge_result
+
         })
 
     return results
 
+def get_subtasks(pdf_path,question):
+    subtasks_result = generate_subtasks(extract_text_from_pdf(pdf_path), question)
+    return subtasks_result
 
 
 
-text = extract_text_from_pdf("/Users/linlin/Desktop/FDU/Jielin的工作/Infographic_project/infographicY/WorldWar2.pdf")
+# AGENT2 - Visualization
+# AGENT2 - Visualization
+def generate_Vis(content, insight):
+    # Prepare the prompt
+    system_prompt = """
+    I will provide knwoledge content for content input, like following example:
+    "15 in 56 deaths"
+    I will provide data insight for insight input, like following exmaple:
+    "Value"
 
-question = "Death and Causaulities in WorldWar2"
+    Data_insight includes:
+      1. Value: Standalone numerical facts (e.g., "189 deaths").
+      2. Difference: Explicit comparisons (e.g., "25% higher than").
+      3. Proportion: Part-to-whole relationships (e.g., "28% of X", "1 in 10", "1/5").
+      4. Trend: Time-bound changes (e.g., "grown by 40% annually", "increase", "decrease").
+      5. Categorization: Discrete classes (e.g., "Basic, Pro, Enterprise tiers").
+      6. Distribution: Data spread (e.g., "peaks at 20–34 years").
+      7. Rank: Ordered hierarchy (e.g., "ranks first").
+      8. Extreme: Maxima/minima (e.g., "hottest month ever").
 
-subtasks = generate_subtasks(text, question)
+    You are a data analyst. Your task is to choose a visualization form according to Knowledge_content and Data_insight.
+    You can choose from the following visualization forms:
+         1. pie chart: if there are proportions of different entities
+         2. bar chart: if you need to show features of each entity
+         3. line chart: show trends in data over time or fluctuations
+         4. pictogram: if you want to show the magnitude of an important stat or visualize a fraction or percentage
+         5. none
 
-print(subtasks)
+    Your output should be one of the following Json form:
+        1.{
+             "If Visualization": "None"
+        },
+        2.{
+             "If Visualization": "Yes",
+             "Visualization_type": "Pie_Chart",
+             "Categorization":["xx","xx","xx"],
+             "proportion":["20%","30%","50%"]
+        },
+        3.{
+             "If Visualization": "Yes",
+             "Visualization_type": "Bar_Chart",
+             "Categorization":["xx","xx"],
+             "value":[30,50]
+        },
+        4.{
+             "If Visualization": "Yes",
+             "Visualization_type": "Line_Chart",
+             "Categorization":["xx","xx","xx"],
+             "value":[10,12,15]
+        },
+        5.{
+             "If Visualization": "Yes",
+             "Visualization_type": "Pictogram",
+             "Highlight": 12,
+             "Total": 50
+        }
+"""
 
-print(process_subtasks(subtasks))
+    user_prompt = f"""
+    content: {content}
+    insight: {insight}
+    """
+
+    # Call the OpenAI API
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        stream=False,
+        response_format={
+        'type': 'json_object'
+    },
+
+    )
+
+    # Extract and return the subtasks
+    visualization = completion.choices[0].message.content
+    return visualization
+
+
+def get_knowledge(pdf_path,question):
+    knowledge_result = process_subtasks(get_subtasks(pdf_path,question))
+    return knowledge_result 
+
+def data_with_visualization(knowledge_data):
+    for item in knowledge_data:
+        knowledge_dict = json.loads(item["knowledge"])
+        for key in knowledge_dict:
+            if knowledge_dict[key] is not None:  # 检查knowledge是否为空
+                knowledge_list = knowledge_dict[key]
+                for knowledge_object in knowledge_list:
+                  knowledge = knowledge_dict[key]
+                  content = knowledge_object["Knowledge_content"]
+                  insight = knowledge_object["Data_insight"]
+                  visualization = generate_Vis(content, insight)
+                  knowledge_object["visualization"] = visualization
+        item["knowledge"] = json.dumps(knowledge_dict, indent=2)
+    return knowledge_data
+
+
+'''
+result = generate_subtasks(extract_text_from_pdf(pdf_path), question)
+print(result)
+'''
+'''
+result = data_with_visualization(get_knowledge(pdf_path,question))
+print(result)
+'''
+
+'''
+completion = client.chat.completions.create(
+    model="deepseek-chat",
+    messages=[
+        {"role": "developer", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": "Write a haiku about recursion in programming."
+        }
+    ]
+)
+
+print(completion.choices[0].message)'
+'''
+'''
+result = generate_title(question)
+print(result)
+'''
