@@ -1,4 +1,5 @@
 import os
+from pprint import pprint
 import openai
 import pdfplumber
 import json
@@ -8,9 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = OpenAI(
-    #base_url="https://api.deepseek.com/",
-    api_key=os.environ.get("OPENAI_KEY")
-    #api_key=os.environ.get("DEEPSEEK_KEY")
+    #base_url="https://pro.aiskt.com/v1",
+    api_key=os.getenv("OPENAI_KEY")
+    #api_key=os.getenv("DEEPSEEK_KEY")
     )
 
 
@@ -47,7 +48,7 @@ def generate_title(text):
 
     # Call the OpenAI API
     completion = client.chat.completions.create(
-        model="gpt-4o",  # Use the appropriate model
+        model="gpt-4o-mini",  # Use the appropriate model
         #model = "deepseek-chat",
         messages=[
             {"role": "system", "content": system_prompt},
@@ -351,7 +352,7 @@ def generate_Knowledge(text):
     # Call the OpenAI API
     completion = client.chat.completions.create(
         #model="deepseek-chat",  # Use the appropriate model
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -440,8 +441,12 @@ def generate_Vis(content, insight):
 
     Your output should be one of the following Json form:
         1.{
-             "If Visualization": "None"
+             "If Visualization": "None",
+             "Visulization_type": None,
+
         },
+
+  
         2.{
              "If Visualization": "Yes",
              "Visualization_type": "Pie_Chart",
@@ -489,6 +494,7 @@ def generate_Vis(content, insight):
 
     # Extract and return the subtasks
     visualization = completion.choices[0].message.content
+    pprint(visualization)
     return visualization
 
 
@@ -504,38 +510,10 @@ def data_with_visualization(knowledge_data):
                 knowledge_list = knowledge_dict[key]
                 for knowledge_object in knowledge_list:
                   knowledge = knowledge_dict[key]
-                  content = knowledge_object["Knowledge_content"]
+                  content = knowledge_object.get("Knowledge_content", None)
                   insight = knowledge_object["Data_insight"]
                   visualization = generate_Vis(content, insight)
                   knowledge_object["visualization"] = visualization
         item["knowledge"] = json.dumps(knowledge_dict, indent=2)
     return knowledge_data
 
-
-'''
-result = generate_subtasks(extract_text_from_pdf(pdf_path), question)
-print(result)
-'''
-'''
-result = data_with_visualization(get_knowledge(pdf_path,question))
-print(result)
-'''
-
-'''
-completion = client.chat.completions.create(
-    model="deepseek-chat",
-    messages=[
-        {"role": "developer", "content": "You are a helpful assistant."},
-        {
-            "role": "user",
-            "content": "Write a haiku about recursion in programming."
-        }
-    ]
-)
-
-print(completion.choices[0].message)'
-'''
-'''
-result = generate_title(question)
-print(result)
-'''
