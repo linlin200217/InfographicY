@@ -517,3 +517,353 @@ def data_with_visualization(knowledge_data):
         item["knowledge"] = json.dumps(knowledge_dict, indent=2)
     return knowledge_data
 
+# NEW UPDATE
+def extract_knowledge_contents(json_file_path):
+    """
+    从指定的 JSON 文件中提取知识内容并返回一个结构化字符串
+
+    参数:
+        json_file_path (str): JSON 文件的路径
+
+    返回:
+        str: 包含标题、subtask_title 和对应 knowledge_content 的结构化字符串
+    """
+    import json
+    
+    # 读取指定的 JSON 文件
+    with open(json_file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    
+    # 初始化结果字符串
+    result = ""
+    
+    # 添加标题
+    if 'title' in data:
+        result += f"Title: {data['title']}\n\n"
+    
+    # 遍历 data 列表中的每个 subtask
+    for subtask in data['data']:
+        # 添加 subtask_title（如果存在）
+        if 'subtask_title' in subtask and subtask['subtask_title']:
+            result += f"Subtask: {subtask['subtask_title']}\n"
+        
+        # 添加该 subtask 的所有 knowledge_content
+        if 'knowledges' in subtask:
+            for knowledge in subtask['knowledges']:
+                if 'knowledge_content' in knowledge:
+                    result += f"- {knowledge['knowledge_content']}\n"
+        
+        # 在每个 subtask 之间添加分隔符
+        result += "\n"
+    
+    # 去除最后一个多余的换行符
+    return result.strip()
+
+# AGENT2 - COLOR PALATTE DESIGNER
+import openai
+import json
+
+def generate_colors(text):
+    # 增强版系统提示
+    system_prompt = """
+    You are a professional color palette generator for infographic designs.
+    Based on the emotional tone and semantic context of the provided text, please generate a color palette and font recommendations following the JSON output structure below:
+    
+    {
+    "themeColors": [<list of 3-5 RGB colors>],
+    "backgroundColor": [<one RGB color>],
+    "First_level_Color": [<one RGB color from themeColors>],
+    "First_level_Font": "<one font style>",
+    "Second_level_Color": [<one RGB color from themeColors>],
+    "Second_level_Font": "<one font style>",
+    "Text_Color": [<one RGB color: either [51,51,58] or [255,255,255]>],
+    "Text_Font": "<one font style>"
+  }
+
+    Definitions:
+    themeColors: Choose 3 to 5 RGB color codes representing the infographic's overall theme, aligned with the text content's emotion and context.
+    backgroundColor: Select 1 RGB color suitable for the infographic background, harmonizing well with the chosen theme colors.
+    First_level_Color: An eye-catching highlight color for the most important information, selected from the themeColors.
+    First_level_Font: A font style for the most important highlighted content, chosen from the provided font list.
+    Second_level_Color: A highlight color for the second-most important information, also selected from the themeColors.    
+    Second_level_Font: A font style for secondary highlighted content, chosen from the provided font list.
+    Text_Color: Choose either [51,51,58] (dark) or [255,255,255] (white), ensuring sharp contrast with the background color for clear readability.
+    Text_Font: A font style suitable for regular textual content, chosen from the provided font list.
+  
+    Font List : 
+    ['Arial', 'Verdana', 'Helvetica', 'Courier', 'Consolas', 'cursive', 'Tahoma', 'Trebuchet MS', 'Times New Roman', 'Georgia', 'Palatino', 'Baskerville', 'Gill Sans', 'Andalé Mono', 'Avantgarde', 'Optima', 'Arial Narrow', 'Didot', 'Bookman', 'American Typewriter', 'OCR A Std', 'Brush Script MT', 'Lucida', 'Bradley Hand', 'Trattatello', 'fantasy', 'Harrington', 'Marker Felt', 'Chalkduster', 'Comic Sans MS' ]
+
+
+    Requirements:
+    1. Generate colors and fonts that match the emotional tone and semantic context of the provided text.
+    2. Theme colors should be harmonious and suitable for use in graphics, icons, and highlighted text.
+    3. The background color must complement the theme colors effectively.
+    4. Highlight colors must be chosen directly from the themeColors to maintain visual consistency.
+    5. Font styles must reflect the emotion, semantics, and context of the provided text.
+    6. Ensure your overall recommendations adhere to aesthetic and infographic design principles.
+
+
+    
+
+    Example valid output:
+    {
+      "themeColors": [[45, 32, 27], [78, 64, 55], [134, 86, 52], [92, 109, 125]],
+      "backgroundColor": [255, 255, 255],
+      "First_level_Color": [45, 32, 27],
+      "First_level_Font": "Verdana",
+      "Second_level_Color": [78, 64, 55],
+      "Second_level_Font": "Arial",
+      "Text_Color": [51, 51, 58],
+      "Text_Font": "Gill Sans"
+    }
+    """
+
+    # 优化后的用户提示
+    user_prompt = f"""
+    {text}
+    """
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        stream=False,
+        response_format={
+        'type': 'json_object'
+    },
+
+    )
+
+    # 处理响应并解析JSON
+    ColorFont = completion.choices[0].message.content
+    return ColorFont
+
+# 示例使用
+'''
+text = extract_knowledge_contents("/mnt/disk2/jielin.feng/InfographicY/result.json")
+colors = generate_colors(text)
+print(colors)
+'''
+
+
+
+
+
+'''
+with open("/mnt/disk2/jielin.feng/InfographicY/result.json", 'r', encoding='utf-8') as file:
+        data = json.load(file)
+'''
+
+Grid = 0
+Spiral = 0
+Landscape = 0
+Star = 0
+Portrait = 0
+PortraitGrid = 0
+
+import json
+
+import json
+
+def count_visual_groups(json_file_path):
+    # 初始的 relation 类型统计字典，每种 narrative logic 初始 count 都为 0
+    relation_dic = {
+        "Elaboration": 0,
+        "Example": 0,
+        "Attribution": 0,
+        "Generalization": 0,
+        "Temporal": 0,
+        "Cause-Effect": 0,
+        "Violated expectation": 0,
+        "Contrast": 0,
+        "Similarity": 0
+    }
+    
+    """
+    统计 result.json 文件中 visual group、knowledge、related subtask 的数量、
+    relation 类型统计字典以及每个 visual group 被其他相关 visual group 引用的次数。
+    
+    参数:
+        json_file_path (str): JSON 文件的路径
+
+    返回:
+        tuple: (visual group 的数量, knowledge 的数量, related subtask 的数量,
+                relation 类型统计字典, visual group 引用计数列表)
+    """
+    with open(json_file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    
+    groups = data.get('data', [])
+    visual_group_count = len(groups)
+    knowledge_count = 0
+    related_subtask_count = 0
+    
+    # 先统计 relation 类型及 knowledge、related_subtask 数量
+    for subtask in groups:
+        knowledges = subtask.get('knowledges', [])
+        knowledge_count += len(knowledges)
+        
+        related_subtask = subtask.get('related_subtask')
+        if related_subtask and related_subtask.get('title') is not None:
+            related_subtask_count += 1
+            relation_type = related_subtask.get('relation')
+            if relation_type in relation_dic:
+                relation_dic[relation_type] += 1
+
+    # 构建 visual group 的标题列表，用于匹配 related_subtask 中的 title
+    visual_group_titles = [group.get("subtask_title") for group in groups]
+    # 初始化引用计数列表，每个 visual group 初始为 0
+    visual_group_ref_count = [0] * visual_group_count
+
+    # 遍历每个 visual group的 related_subtask，
+    # 如果其 title 与某个 visual group 的 subtask_title 匹配，则将该 visual group 的计数加 1
+    for subtask in groups:
+        related_subtask = subtask.get('related_subtask')
+        if related_subtask:
+            related_title = related_subtask.get('title')
+            if related_title:
+                try:
+                    index = visual_group_titles.index(related_title)
+                    visual_group_ref_count[index] += 1
+                except ValueError:
+                    # 如果没有匹配上，则跳过
+                    pass
+
+    return visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count
+
+
+  
+
+
+    # 假设每个subtask_title属于一个visual group
+#print(count_visual_groups("/mnt/disk2/jielin.feng/InfographicY/result.json"))
+
+
+#VG_num = len(data['data'])
+
+def Rank_Template(visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count, infographic_size):
+    # 初始分数
+    Grid = 0
+    Spiral = 0
+    Landscape = 0
+    Star = 0
+    Portrait = 0
+    PortraitGrid = 0
+
+    # 1. 根据 visual_group_count 计分
+    if visual_group_count > 8:
+        Grid += 1
+        Spiral += 1
+    elif 6 <= visual_group_count <= 8:
+        Star += 1
+        PortraitGrid += 1
+    elif visual_group_count < 6:
+        Landscape += 1
+        Portrait += 1
+
+    # 2. 根据 knowledge_count/visual_group_count 计分
+    ratio_knowledge = (knowledge_count / visual_group_count) if visual_group_count != 0 else 0
+    if ratio_knowledge < 0.3:
+        Portrait += 1
+        Landscape += 1
+    elif 0.3 <= ratio_knowledge <= 0.6:
+        Star += 1
+        PortraitGrid += 1
+    elif 0.6 < ratio_knowledge <= 0.75:
+        Grid += 1
+    elif ratio_knowledge > 0.75:
+        Spiral += 1
+
+    # 3. 根据 related_subtask_count/visual_group_count 计分
+    ratio_related = (related_subtask_count / visual_group_count) if visual_group_count != 0 else 0
+    if ratio_related > 0.8:
+        Spiral += 1
+    elif 0.6 <= ratio_related <= 0.8:
+        Portrait += 1
+        Star += 1
+        PortraitGrid += 1
+        Landscape += 1
+    elif ratio_related < 0.6:
+        Grid += 1
+
+    # 4. 根据 relation_dic 的规则计分
+    # 如果 Generalization、Elaboration 与 Example 均大于 0，则 Portrait 与 Landscape 各 +1
+    if (relation_dic.get("Generalization", 0) > 0 and 
+        relation_dic.get("Elaboration", 0) > 0 and 
+        relation_dic.get("Example", 0) > 0):
+        Portrait += 1
+        Landscape += 1
+    # 如果存在 Generalization，但 Elaboration 或 Example 不同时大于 0，则 Star +1, PortraitGrid +1
+    elif relation_dic.get("Generalization", 0) > 0 and (relation_dic.get("Elaboration", 0) == 0 or relation_dic.get("Example", 0) == 0):
+        Star += 1
+        PortraitGrid += 1
+
+    # 如果 Example 的数量大于或等于 2，则 Spiral +1
+    if relation_dic.get("Example", 0) >= 2:
+        Spiral += 1
+
+    # 如果有超过 3 种类型的 relation count 大于 0，则 Grid +1
+    positive_types = sum(1 for v in relation_dic.values() if v > 0)
+    if positive_types > 3:
+        Grid += 1
+
+    # 5. 根据 visual_group_ref_count 计分
+    # 如果存在任一数字大于 2，则 Star +1, PortraitGrid +1
+    if any(count > 2 for count in visual_group_ref_count):
+        Star += 1
+        PortraitGrid += 1
+
+    # 如果 visual_group_ref_count 只包含 0 和 1，则判断 1 与 0 的数量
+    if set(visual_group_ref_count).issubset({0, 1}):
+        ones = visual_group_ref_count.count(1)
+        zeros = visual_group_ref_count.count(0)
+        if ones > zeros:
+            Spiral += 1
+            Portrait += 1
+            Landscape += 1
+        elif zeros > ones:
+            Grid += 1
+
+    # 整体分数字典
+    scores = {
+        "Grid": Grid,
+        "Spiral": Spiral,
+        "Landscape": Landscape,
+        "Star": Star,
+        "Portrait": Portrait,
+        "PortraitGrid": PortraitGrid
+    }
+
+    # 6. 根据分数排序，分数相同时按 tie-break 优先级排序
+    # tie-break 优先级：Grid > Star > PortraitGrid > Portrait > Spiral > Landscape
+    priority_order = {"Grid": 0, "Star": 1, "PortraitGrid": 2, "Portrait": 3, "Spiral": 4, "Landscape": 5}
+    sorted_scores = sorted(scores.items(), key=lambda x: (-x[1], priority_order[x[0]]))
+    
+    # 7. 根据 infographic_size 做特殊排序处理
+    # infographic_size: [height, width]
+    height, width = infographic_size
+    if height > width:
+        # 如果是竖屏（height > width），则 Landscape 无论分数如何都自动垫底
+        sorted_scores = [item for item in sorted_scores if item[0] != "Landscape"]
+        sorted_scores.append(("Landscape", scores["Landscape"]))
+    else:
+        # 如果是横屏（width > height），且 Portrait 的分数大于或等于 Landscape，则自动把 Landscape 排到 Portrait 前面
+        if scores["Portrait"] >= scores["Landscape"]:
+            # 获取 Portrait 与 Landscape 在当前排序中的位置
+            portrait_index = next((i for i, item in enumerate(sorted_scores) if item[0] == "Portrait"), None)
+            landscape_index = next((i for i, item in enumerate(sorted_scores) if item[0] == "Landscape"), None)
+            if (portrait_index is not None and landscape_index is not None and 
+                portrait_index < landscape_index):
+                # 交换二者的位置
+                sorted_scores[portrait_index], sorted_scores[landscape_index] = sorted_scores[landscape_index], sorted_scores[portrait_index]
+
+    # 返回类型名称列表，按最终排序顺序排列
+    sorted_types = [k for k, v in sorted_scores]
+    return sorted_types
+
+def rank_infographic(json_file_path, infographic_size):
+    visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count = count_visual_groups(json_file_path)
+    return Rank_Template(visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count, infographic_size)
+

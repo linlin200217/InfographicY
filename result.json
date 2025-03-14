@@ -1,0 +1,226 @@
+{
+  "title": "World War II Overview",
+  "data": [
+    {
+      "subtask_title": "Causes of World War II",
+      "subtask_content": "The devastation of the Great War had greatly destabilized Europe, and in many respects World War II grew out of issues left unresolved by that earlier conflict. In particular, political and economic instability in Germany, and lingering resentment over the harsh terms imposed by the Versailles Treaty, fueled the rise to power of Adolf Hitler and the National Socialist German Workers’ Party.",
+      "subtask_relation": "Cause-effect",
+      "related_subtask": {
+        "title": null,
+        "relation": null
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "Versailles Treaty led to political and economic instability in Germany.",
+          "data_insight": "Textual_Statement",
+          "first_level_highlight": "Versailles Treaty",
+          "second_level_highlight": "political and economic instability",
+          "icon_keyword": "instability",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Hitler's rise to power",
+      "subtask_content": "As early as 1923, in his memoir and propaganda tract 'Mein Kampf,' Adolf Hitler predicted a general European war. After becoming Chancellor of Germany in 1933, Hitler swiftly consolidated power, anointing himself Führer in 1934, and became obsessed with the idea of the superiority of the 'pure' German race. Hitler believed that war was the only way to gain the necessary 'Lebensraum' for the German race to expand.",
+      "subtask_relation": "Elaboration",
+      "related_subtask": {
+        "title": "Causes of World War II",
+        "relation": "Similarity"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "Adolf Hitler predicted a general European war as early as 1923.",
+          "data_insight": "Trend",
+          "first_level_highlight": "1923",
+          "second_level_highlight": "general European war",
+          "icon_keyword": "war",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        },
+        {
+          "knowledge_content": "Hitler consolidated power and anointed himself Führer in 1934.",
+          "data_insight": "Trend",
+          "first_level_highlight": "1934",
+          "second_level_highlight": "consolidation of power",
+          "icon_keyword": "Führer",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Hitler's military aggression",
+      "subtask_content": "In the mid-1930s, Hitler secretly began the rearmament of Germany, a violation of the Versailles Treaty. After signing alliances with Italy and Japan, Hitler sent troops to occupy Austria in 1938 and annexed Czechoslovakia in 1939.",
+      "subtask_relation": "Elaboration",
+      "related_subtask": {
+        "title": "Hitler's rise to power",
+        "relation": "Similarity"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "Germany's rearmament began in the mid-1930s.",
+          "data_insight": "Trend",
+          "first_level_highlight": "mid-1930s",
+          "second_level_highlight": "rearmament",
+          "icon_keyword": "Germany",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        },
+        {
+          "knowledge_content": "Occupied Austria in 1938 and annexed Czechoslovakia in 1939.",
+          "data_insight": "Trend",
+          "first_level_highlight": "1938, 1939",
+          "second_level_highlight": "occupation and annexation",
+          "icon_keyword": "Austria",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Outbreak of World War II",
+      "subtask_content": "In late August 1939, Hitler and Soviet leader Joseph Stalin signed the German-Soviet Nonaggression Pact. On September 1, 1939, Hitler invaded Poland from the west, leading France and Britain to declare war on Germany two days later.",
+      "subtask_relation": "Cause-effect",
+      "related_subtask": {
+        "title": "Hitler's military aggression",
+        "relation": "Contrast"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "German-Soviet Nonaggression Pact signed in late August 1939.",
+          "data_insight": "Textual_Statement",
+          "first_level_highlight": "August 1939",
+          "second_level_highlight": null,
+          "icon_keyword": "Pact",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        },
+        {
+          "knowledge_content": "Hitler invaded Poland on September 1, 1939.",
+          "data_insight": "Textual_Statement",
+          "first_level_highlight": "September 1, 1939",
+          "second_level_highlight": null,
+          "icon_keyword": "Poland",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        },
+        {
+          "knowledge_content": "France and Britain declared war on Germany on September 3, 1939.",
+          "data_insight": "Textual_Statement",
+          "first_level_highlight": "September 3, 1939",
+          "second_level_highlight": null,
+          "icon_keyword": "war",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Major battles of World War II",
+      "subtask_content": "Key battles of World War II included the Battle of Britain, Battle of Stalingrad, and the Normandy landings, which were pivotal in changing the tide of the war in favor of the Allies.",
+      "subtask_relation": "Generalization",
+      "related_subtask": {
+        "title": "Outbreak of World War II",
+        "relation": "Contrast"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "Key battles of World War II included the Battle of Britain, Battle of Stalingrad, and the Normandy landings.",
+          "data_insight": "Categorization",
+          "first_level_highlight": "Battle of Britain, Battle of Stalingrad, Normandy landings",
+          "second_level_highlight": "Key battles",
+          "icon_keyword": "battles",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Impact of World War II",
+      "subtask_content": "World War II proved to be the deadliest international conflict in history, taking the lives of an estimated 60 to 80 million people, including approximately 6 million Jews during the Holocaust.",
+      "subtask_relation": "Generalization",
+      "related_subtask": {
+        "title": "Major battles of World War II",
+        "relation": "Cause-effect"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "60 to 80 million people lost their lives.",
+          "data_insight": "Value",
+          "first_level_highlight": "60 to 80 million",
+          "second_level_highlight": "deaths",
+          "icon_keyword": "conflict",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        },
+        {
+          "knowledge_content": "Approximately 6 million Jews were killed during the Holocaust.",
+          "data_insight": "Value",
+          "first_level_highlight": "6 million",
+          "second_level_highlight": "Jews",
+          "icon_keyword": "Holocaust",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "subtask_title": "Post-war consequences",
+      "subtask_content": "The legacy of World War II included the spread of communism in Eastern Europe, a global shift in power to the United States and Soviet Union, and the beginning of the Cold War.",
+      "subtask_relation": "Cause-effect",
+      "related_subtask": {
+        "title": "Impact of World War II",
+        "relation": "Similarity"
+      },
+      "knowledges": [
+        {
+          "knowledge_content": "the beginning of the Cold War.",
+          "data_insight": "Textual_Statement",
+          "first_level_highlight": "Cold War",
+          "second_level_highlight": null,
+          "icon_keyword": "legacy",
+          "visualization": {
+            "is_visualization": false,
+            "type": null,
+            "data": []
+          }
+        }
+      ]
+    }
+  ]
+}
