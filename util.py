@@ -123,12 +123,12 @@ def generate_subtasks(text, question):
       -[title, relation]: [None, None].
 
       -Subtask_title: Extinction rate of amphibians.
-      -Subtask_content: 20% of the world’s amphibians species are EXTINCT.
+      -Subtask_content: 20% of the world's amphibians species are EXTINCT.
       -Subtask_relation: Elaboration
       -[title, relation]: [Areas of amphibian population decline, Generalization].
 
       -Subtask_title: Amphibians as a percentage of extinct species.
-      -Subtask_content: 32% of the world’s extinct species are amphibians.
+      -Subtask_content: 32% of the world's extinct species are amphibians.
       -Subtask_relation: Elaboration
       -[title, relation]: [Extinction rate of amphibians, Similarity].
 
@@ -198,7 +198,7 @@ def generate_subtasks(text, question):
       - [title, relation]: [Survival rates by class and gender, Similarity].
 
       - Subtask_title: Survival rates by family presence.
-      - Subtask_content: Were you alone onboard like Jack or surrounded by family (albeit people you may not want relations with..) like Rose? Would either scenario make you more likely to survive on that fateful night in April? The graph below breaks out not only average number of family members but also the average number of spouses/siblings and parents/children aboard. Take a gander at the results:To no surprise, you had a better chance of survival if you had more family members aboard. It seems the presence of siblings or spouses had little to no bearing on your chances of getting out alive, as the average number is about the same for both those who perished and those who survived. Once again it seems like “women and children first,” as most Hollywood depictions show, may not have just been a trope. Being a parent or child gave you a lifeline - the greater number of parents or children you had accompanying you on the ship, the better your chances of survival.
+      - Subtask_content: Were you alone onboard like Jack or surrounded by family (albeit people you may not want relations with..) like Rose? Would either scenario make you more likely to survive on that fateful night in April? The graph below breaks out not only average number of family members but also the average number of spouses/siblings and parents/children aboard. Take a gander at the results:To no surprise, you had a better chance of survival if you had more family members aboard. It seems the presence of siblings or spouses had little to no bearing on your chances of getting out alive, as the average number is about the same for both those who perished and those who survived. Once again it seems like "women and children first," as most Hollywood depictions show, may not have just been a trope. Being a parent or child gave you a lifeline - the greater number of parents or children you had accompanying you on the ship, the better your chances of survival.
       - Subtask_relation: Elaboration
       - [title, relation]: [Survival rates by age, Similarity].
 
@@ -297,7 +297,7 @@ def generate_Knowledge(text):
 
     Note:
       - Use strict JSON format for each insight.
-      - Skip insights that don’t clearly match the defined types.
+      - Skip insights that don't clearly match the defined types.
       - Ensure no repetition (e.g., separate "189 deaths" and "700 injured" into distinct entries).
 
     Example(Here I give in list, you should provide me JSON):
@@ -559,6 +559,40 @@ def extract_knowledge_contents(json_file_path):
     # 去除最后一个多余的换行符
     return result.strip()
 
+def extract_knowledge_from_parser_result(parser_result):
+    """
+    从 ParserResult 对象中提取知识内容并返回一个结构化字符串
+
+    参数:
+        parser_result (ParserResult): ParserResult 对象
+
+    返回:
+        str: 包含标题、subtask_title 和对应 knowledge_content 的结构化字符串
+    """
+    # 初始化结果字符串
+    result = ""
+    
+    # 添加标题
+    result += f"Title: {parser_result.title}\n\n"
+    
+    # 遍历 data 列表中的每个 subtask
+    for subtask in parser_result.data:
+        # 添加 subtask_title
+        if subtask.subtask_title:
+            result += f"Subtask: {subtask.subtask_title}\n"
+        
+        # 添加该 subtask 的所有 knowledge_content
+        if subtask.knowledges:
+            for knowledge in subtask.knowledges:
+                if hasattr(knowledge, 'knowledge_content'):
+                    result += f"- {knowledge.knowledge_content}\n"
+        
+        # 在每个 subtask 之间添加分隔符
+        result += "\n"
+    
+    # 去除最后一个多余的换行符
+    return result.strip()
+
 # AGENT2 - COLOR PALATTE DESIGNER
 import openai
 import json
@@ -667,7 +701,7 @@ import json
 
 import json
 
-def count_visual_groups(json_file_path):
+def count_visual_groups(dict_data):
     # 初始的 relation 类型统计字典，每种 narrative logic 初始 count 都为 0
     relation_dic = {
         "Elaboration": 0,
@@ -692,10 +726,9 @@ def count_visual_groups(json_file_path):
         tuple: (visual group 的数量, knowledge 的数量, related subtask 的数量,
                 relation 类型统计字典, visual group 引用计数列表)
     """
-    with open(json_file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
+
     
-    groups = data.get('data', [])
+    groups = dict_data.get('data', [])
     visual_group_count = len(groups)
     knowledge_count = 0
     related_subtask_count = 0
@@ -863,7 +896,7 @@ def Rank_Template(visual_group_count, knowledge_count, related_subtask_count, re
     sorted_types = [k for k, v in sorted_scores]
     return sorted_types
 
-def rank_infographic(json_file_path, infographic_size):
-    visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count = count_visual_groups(json_file_path)
+def rank_infographic(dict_data:dict, infographic_size:tuple[int, int]) -> list[str]:
+    visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count = count_visual_groups(dict_data)
     return Rank_Template(visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count, infographic_size)
 
