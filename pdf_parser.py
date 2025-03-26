@@ -234,26 +234,26 @@ class PdfParser:
         return rank_infographic(parser_result.model_dump(), infographic_size)
 
 if __name__ == "__main__":
-    # client = OpenAI(
-    #     api_key=os.getenv("OPENAI_KEY")
-    #     )
-    # pdf_parser = PdfParser("uploads/rabbit.pdf", "rabbit", client)
-    # result = pdf_parser.run()
-    # with open("result.json", "w",encoding='utf-8') as file:
-    #     file.write(result.model_dump_json(indent=2))
+     client = OpenAI(
+         api_key=os.getenv("OPENAI_KEY")
+         )
+     pdf_parser = PdfParser("uploads/Titanic survivor_副本.pdf", "what factors affect survival rate", client)
+     result = pdf_parser.run()
+     with open("result.json", "w",encoding='utf-8') as file:
+         file.write(result.model_dump_json(indent=2))
     
-    # # 测试新的 extract_knowledge_from_parser_result 函数
-    # knowledge_content = PdfParser.extract_knowledge_from_parser_result(result)
-    # print("\n提取的知识内容:")
-    # print(knowledge_content)
+     # 测试新的 extract_knowledge_from_parser_result 函数
+     knowledge_content = PdfParser.extract_knowledge_from_parser_result(result)
+     print("\n提取的知识内容:")
+     print(knowledge_content)
     
-    # # 测试新的 generate_colors 静态方法
-    # print("\n生成配色方案:")
-    # colors = PdfParser.generate_colors(knowledge_content, client)
-    # print(colors.model_dump_json(indent=2))
+     # 测试新的 generate_colors 静态方法
+     print("\n生成配色方案:")
+     colors = PdfParser.generate_colors(knowledge_content, client)
+     print(colors.model_dump_json(indent=2))
 
     # 测试新的 rank 静态方法
-    with open("result.json", "r",encoding='utf-8') as file:
-       result = ParserResult(**json.load(file))
+     with open("result.json", "r",encoding='utf-8') as file:
+        result = ParserResult(**json.load(file))
     
-    print(PdfParser.rank(result, (1000, 1000)))
+     print(PdfParser.rank(result, (1000, 1000)))

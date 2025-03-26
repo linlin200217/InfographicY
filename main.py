@@ -28,6 +28,8 @@ def hello():
 
 @app.post("/upload",response_model=ParserResult)
 def upload_pdf(question: str = Form(...), file: UploadFile = File(...)):
+    '''  
+    
      if file.filename and not file.filename.endswith(".pdf"):
          raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
@@ -44,12 +46,13 @@ def upload_pdf(question: str = Form(...), file: UploadFile = File(...)):
      )
      pdf_parser = PdfParser(file_path, question, client)
      return pdf_parser.run()
-'''
-     先用假数据
+    '''
+     #先用假数据
     with open("result.json", "r",encoding="utf-8") as f:
         data = json.load(f)
     return data
-'''
+
+
 
 @app.post("/color",response_model=ColorScheme)
 def color(knowledgeContent: ParserResult,infographic_size:tuple[int, int]|None=None):

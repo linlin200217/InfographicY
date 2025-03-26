@@ -5,6 +5,9 @@ import pdfplumber
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from math import sqrt
 
 load_dotenv()
 
