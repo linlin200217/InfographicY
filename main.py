@@ -67,6 +67,38 @@ def color(knowledgeContent: ParserResult,infographic_size:tuple[int, int]|None=N
 def rank(parser_result: ParserResult, infographic_size: tuple[int, int]):
     return PdfParser.rank(parser_result, infographic_size)
 
+
+
+def layout_poster(type:str,valentine_data:dict, W, H, margin=0, vertical_margin=0):
+    if type == "portrait":
+        from portrait import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    elif type == "landscape":
+        from landscape import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    elif type == "grid":
+        from grid import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    elif type == "grid_protrait":
+        from grid_protrait import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    elif type == "star":
+        from star import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    else:
+        raise ValueError("Invalid type")
+    
+@app.post("/layout",response_model=dict)
+def layout(type:str,infographic_size: tuple[int, int],parser_result:dict):
+    return layout_poster(type,parser_result,infographic_size[0], infographic_size[1],margin=0, vertical_margin=0)
+
+@app.post("/submit")
+def submit(type:str,layout:dict,parser_result:dict):
+    from pprint import pprint
+    print(type)
+    pprint(layout)
+    pprint(parser_result)
+    return "ok"
 '''
 if __name__ == "__main__":
     import uvicorn

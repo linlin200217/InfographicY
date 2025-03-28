@@ -903,3 +903,65 @@ def rank_infographic(dict_data:dict, infographic_size:tuple[int, int]) -> list[s
     visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count = count_visual_groups(dict_data)
     return Rank_Template(visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count, infographic_size)
 
+def add_padding_to_layout(layout, padding=1):
+    """
+    Adds padding to all blocks within the layout dictionary.
+    
+    Args:
+        layout: Dictionary containing the poster layout with coordinates for each block.
+        padding: Float value to add as padding to each block (default=10).
+    
+    Returns:
+        New layout dictionary with padded coordinates for each block.
+    """
+    import copy
+    
+    # Create a deep copy of the layout to avoid modifying the original
+    padded_layout = copy.deepcopy(layout)
+    
+    # Helper function to apply padding to a block's coordinates
+    def pad_coords(coords):
+        if coords is None:
+            return None
+        # Original coordinates
+        x1, y1 = coords[0]
+        x2, y2 = coords[3]  # Bottom-right corner
+        # Apply padding
+        x1_padded = x1 + padding
+        y1_padded = y1 + padding
+        x2_padded = x2 - padding
+        y2_padded = y2 - padding
+        # Ensure the block remains valid (non-negative width and height)
+        if x1_padded >= x2_padded or y1_padded >= y2_padded:
+            return None  # Block becomes invalid with padding
+        return [
+            [x1_padded, y1_padded],
+            [x2_padded, y1_padded],
+            [x1_padded, y2_padded],
+            [x2_padded, y2_padded]
+        ]
+    
+    # Pad the Title block
+    padded_layout["Title"] = pad_coords(padded_layout["Title"])
+    
+    # Iterate through each Visual Group (VG)
+    for vg_key in padded_layout:
+        if vg_key.startswith("VG"):
+            vg = padded_layout[vg_key]
+            # Pad the Subtitle and VG coords
+            if 'Subtitle' in vg:
+                vg["Subtitle"] = pad_coords(vg["Subtitle"])
+            vg["coords"] = pad_coords(vg["coords"])
+            
+            # Iterate through each Knowledge Group (KG) within the VG
+            for kg_key in vg:
+                if kg_key.startswith("KG"):
+                    kg = vg[kg_key]
+                    # Pad all elements within the KG
+                    kg["coords"] = pad_coords(kg["coords"])
+                    kg["Highlight"] = pad_coords(kg["Highlight"])
+                    kg["Icon"] = pad_coords(kg["Icon"])
+                    kg["Vis"] = pad_coords(kg["Vis"])
+                    kg["Text"] = pad_coords(kg["Text"])
+    
+    return padded_layout
