@@ -693,14 +693,6 @@ with open("/mnt/disk2/jielin.feng/InfographicY/result.json", 'r', encoding='utf-
         data = json.load(file)
 '''
 
-Grid = 0
-Spiral = 0
-Landscape = 0
-Star = 0
-Portrait = 0
-PortraitGrid = 0
-
-import json
 
 import json
 
@@ -879,7 +871,7 @@ def Rank_Template(visual_group_count, knowledge_count, related_subtask_count, re
     
     # 7. 根据 infographic_size 做特殊排序处理
     # infographic_size: [height, width]
-    height, width = infographic_size
+    width, height = infographic_size
     if height > width:
         # 如果是竖屏（height > width），则 Landscape 无论分数如何都自动垫底
         sorted_scores = [item for item in sorted_scores if item[0] != "Landscape"]
@@ -898,6 +890,79 @@ def Rank_Template(visual_group_count, knowledge_count, related_subtask_count, re
     # 返回类型名称列表，按最终排序顺序排列
     sorted_types = [k for k, v in sorted_scores]
     return sorted_types
+
+def reorder_valentine_data(valentine_data):
+    """
+    根据相关子任务关系对 valentine_data 中的 "data" 数组重新排序：
+    如果某个子任务的 related_subtask.title 与另一子任务的 subtask_title 相同，
+    则认为这两个任务有关联，排序时尽量使它们相邻。同时保留原始数组中第一个任务的位置不变。
+    
+    参数:
+      valentine_data: dict，格式如下
+        {
+          "title": "Factors Influencing Survival Rates",
+          "data": [ {subtask1}, {subtask2}, ... ]
+        }
+    返回:
+      一个新的字典，结构与输入相同，但 "data" 数组经过排序。
+    """
+    data = valentine_data["data"]
+    n = len(data)
+    
+    # 建立从 subtask_title 到（原始索引, 子任务对象）的映射
+    title_to_info = {
+        item["subtask_title"]: (i, item)
+        for i, item in enumerate(data)
+    }
+    
+    # 初始化图结构和入度：节点为 subtask_title
+    graph = { title: [] for title in title_to_info }
+    indegree = { title: 0 for title in title_to_info }
+    
+    # 遍历每个子任务，根据 related_subtask.title 建立边：如果 A 的标题与 B 的 related_subtask.title 相同，则 A->B
+    for item in data:
+        rel_title = item.get("related_subtask", {}).get("title")
+        if rel_title and rel_title in title_to_info:
+            parent_title = rel_title
+            child_title = item["subtask_title"]
+            graph[parent_title].append(child_title)
+            indegree[child_title] += 1
+
+    # 利用拓扑排序（使用原始顺序作为 tie-breaker）对任务进行排序
+    # 首先把所有入度为0的节点加入队列，并按照原始顺序排序
+    queue = [title for title, deg in indegree.items() if deg == 0]
+    queue.sort(key=lambda t: title_to_info[t][0])
+    
+    sorted_titles = []
+    while queue:
+        current = queue.pop(0)
+        sorted_titles.append(current)
+        for neighbor in graph[current]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+                queue.sort(key=lambda t: title_to_info[t][0])
+    
+    # 如果存在环或遗漏节点，则把未排序的节点按照原始顺序追加
+    for title, (i, _) in title_to_info.items():
+        if title not in sorted_titles:
+            sorted_titles.append(title)
+    
+    # 保证原始数组中的第一个任务不变：如果排序结果首个任务不是原始第一个，则将原始第一个任务移到最前面
+    first_title = data[0]["subtask_title"]
+    if sorted_titles[0] != first_title:
+        if first_title in sorted_titles:
+            sorted_titles.remove(first_title)
+        sorted_titles.insert(0, first_title)
+    
+    # 根据新顺序构造新的 data 数组
+    new_data = [ title_to_info[title][1] for title in sorted_titles ]
+    
+    # 返回新的数据结构
+    return {
+        "title": valentine_data["title"],
+        "data": new_data
+    }
 
 def rank_infographic(dict_data:dict, infographic_size:tuple[int, int]) -> list[str]:
     visual_group_count, knowledge_count, related_subtask_count, relation_dic, visual_group_ref_count = count_visual_groups(dict_data)

@@ -23,10 +23,11 @@ For each extracted knowledge, output results in strict JSON format as follows:
     "data_insight": "<Type of data insight>",
     "first_level_highlight": "<Most critical number/superlative>",
     "second_level_highlight": "<Secondary contextual keyword or null>",
-    "icon_keyword": "<Single iconic noun from original text>"
+    "icon_keyword": "<Single iconic noun>"
     }
 ]
 }
+
 
 Rules:
 - Ensure strict JSON format.
@@ -40,8 +41,8 @@ Rule for Second_level_Highlight:
       - Optional (return null if none)
       - No overlap with First_level
 Rule for Icon_Keyword:
-      - Must be original noun
-      - No modifications allowed
+      - If a suitable noun already exists in the original text, use it directly. (e.g., 'girl' from 'there is a girl')
+      - If no proper word in original text is appropriate as an icon keyword, summarize the most representative noun based on the content(e.g.'an old man' from 'The oldest survivor is 80 years old').
 
 Example:
 Input:
@@ -55,7 +56,7 @@ Output:
     "data_insight": "Value",
     "first_level_highlight": "189",
     "second_level_highlight": null,
-    "icon_keyword": "deaths"
+    "icon_keyword": "skull"
     },
     {
     "knowledge_content": "5 death sentences.",
@@ -69,14 +70,14 @@ Output:
     "data_insight": "Value",
     "first_level_highlight": "700",
     "second_level_highlight": null,
-    "icon_keyword": "injured"
+    "icon_keyword": "injured man"
     },
     {
     "knowledge_content": "7 life imprisonment sentences.",
     "data_insight": "Value",
     "first_level_highlight": "7",
     "second_level_highlight": null,
-    "icon_keyword": "imprisonment"
+    "icon_keyword": "prison"
     }
 ]
 }
