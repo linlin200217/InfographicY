@@ -76,7 +76,7 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
         for KG in knowledges:
             text = KG["knowledge_content"]
             highlight = KG["first_level_highlight"]
-            has_icon = (KG["icon_keyword"] != "" or KG["icon_keyword"] is not None )
+            has_icon = KG["icon_keyword"] != ""
             has_vis = KG["visualization"]["is_visualization"]
             A_text = x * calculate_text_width(text, x)
             A_highlight = 2.0 * x * calculate_text_width(highlight, 2.0 * x)
@@ -141,7 +141,7 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
         for j, KG in enumerate(knowledges, 1):
             text = KG["knowledge_content"]
             highlight = KG["first_level_highlight"]
-            has_icon = (KG["icon_keyword"] != "" or KG["icon_keyword"] is not None )
+            has_icon = KG["icon_keyword"] != ""
             has_vis = KG["visualization"]["is_visualization"]
 
             A_text = x * calculate_text_width(text, x)
@@ -353,6 +353,7 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                     x1_b, y1_b = coords_b[0]
                     x2_b, y2_b = coords_b[3]
                     w_highlight = min(calculate_text_width(highlight, 2.0 * x), kg_width)
+                    h_highlight = 2.0 * x
                     if comb_idx == 0:
                         if x1_a < kg_x + w_highlight:
                             w_a = kg_width - (kg_x + w_highlight - x1_a)
@@ -368,21 +369,54 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                         w_b_new = min(w_b, h_b * r_b)
                         h_b_new = w_b_new / r_b
                         coords_b = [[x1_b, y1_b], [x1_b + w_b_new, y1_b], [x1_b, y1_b + h_b_new], [x1_b + w_b_new, y1_b + h_b_new]]
-                    elif comb_idx == 1:
+                    # elif comb_idx == 1:
+                    #     if x1_a < kg_x + w_highlight:
+                    #         w_a = kg_width - (kg_x + w_highlight - x1_a)
+                    #     if y2_a > y_VG + h_KG:
+                    #         h_a = h_KG - (y1_a - y_VG)
+                    #     w_a_new = min(w_a, h_a * r_a)
+                    #     h_a_new = w_a_new / r_a
+                    #     coords_a = [[x1_a, y1_a], [x1_a + w_a_new, y1_a], [x1_a, y1_a + h_a_new], [x1_a + w_a_new, y1_a + h_a_new]]
+                    #     if x2_b > kg_x + kg_width:
+                    #         w_b = kg_width - (x1_b - kg_x)
+                    #     if y2_b > y_VG + h_KG:
+                    #         h_b = h_KG - (y1_b - y_VG)
+                    #     w_b_new = min(w_b, h_b * r_b)
+                    #     h_b_new = w_b_new / r_b
+                    #     coords_b = [[x1_b, y1_b], [x1_b + w_b_new, y1_b], [x1_b, y1_b + h_b_new], [x1_b + w_b_new, y1_b + h_b_new]]
+                    elif comb_idx == 1:  # Combination 2
+                        # Resize Icon (A), anchored at top-right
                         if x1_a < kg_x + w_highlight:
-                            w_a = kg_width - (kg_x + w_highlight - x1_a)
+                            w_a = kg_width - (kg_x + w_highlight - x1_a)  # Max width from Highlight's right edge
                         if y2_a > y_VG + h_KG:
-                            h_a = h_KG - (y1_a - y_VG)
-                        w_a_new = min(w_a, h_a * r_a)
+                            h_a = h_KG - (y1_a - y_VG)  # Max height within KG
+                        w_a_new = min(w_a, h_a * r_a)  # Preserve aspect ratio
                         h_a_new = w_a_new / r_a
-                        coords_a = [[x1_a, y1_a], [x1_a + w_a_new, y1_a], [x1_a, y1_a + h_a_new], [x1_a + w_a_new, y1_a + h_a_new]]
+                        # Anchor at top-right (x2_a = kg_x + kg_width, y1_a = y_KG)
+                        x2_a_new = kg_x + kg_width
+                        x1_a_new = x2_a_new - w_a_new  # Adjust left edge based on new width
+                        coords_a = [
+                            [x1_a_new, y1_a], [x2_a_new, y1_a],
+                            [x1_a_new, y1_a + h_a_new], [x2_a_new, y1_a + h_a_new]
+                        ]
+                        # Resize Visualization (B), then check overlap with resized Icon
                         if x2_b > kg_x + kg_width:
-                            w_b = kg_width - (x1_b - kg_x)
+                            w_b = kg_width - (x1_b - kg_x)  # Max width within KG
                         if y2_b > y_VG + h_KG:
-                            h_b = h_KG - (y1_b - y_VG)
+                            h_b = h_KG - (y1_b - y_VG)  # Max height within KG
+                        # Apply aspect ratio constraint first
                         w_b_new = min(w_b, h_b * r_b)
                         h_b_new = w_b_new / r_b
-                        coords_b = [[x1_b, y1_b], [x1_b + w_b_new, y1_b], [x1_b, y1_b + h_b_new], [x1_b + w_b_new, y1_b + h_b_new]]
+                        # Compute tentative right edge of B after initial resizing
+                        x2_b_tentative = x1_b + w_b_new
+                        # Check if Visualization's top-right corner overlaps Icon's bottom-left corner
+                        if x2_b_tentative > x1_a_new and y1_b < y1_a + h_a_new:
+                            w_b_new = min(w_b_new, x1_a_new - x1_b)  # Limit width so x2_b does not exceed x1_a_new
+                            h_b_new = w_b_new / r_b  # Recalculate height to maintain aspect ratio
+                        coords_b = [
+                            [x1_b, y1_b], [x1_b + w_b_new, y1_b],
+                            [x1_b, y1_b + h_b_new], [x1_b + w_b_new, y1_b + h_b_new]
+                        ]
                     elif comb_idx == 2:
                         if x1_a < kg_x + w_highlight:
                             w_a = kg_width - (kg_x + w_highlight - x1_a)
@@ -398,30 +432,48 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                         w_b_new = min(w_b, h_b * r_b)
                         h_b_new = w_b_new / r_b
                         coords_b = [[x1_b, y1_b], [x1_b + w_b_new, y1_b], [x1_b, y1_b + h_b_new], [x1_b + w_b_new, y1_b + h_b_new]]
-                    elif comb_idx == 3:
+                    elif comb_idx == 3:  # Combination 4
+                        # Resize Icon (A), anchored at top-left
                         if x2_a > kg_x + kg_width:
-                            w_a = kg_width - (x1_a - kg_x)
+                            w_a = kg_width - (x1_a - kg_x)  # Max width within KG
                         if y2_a > y_VG + h_KG:
-                            h_a = h_KG - (y1_a - y_VG)
-                        w_a_new = min(w_a, h_a * r_a)
+                            h_a = h_KG - (y1_a - y_VG)  # Max height within KG
+                        w_a_new = min(w_a, h_a * r_a)  # Preserve aspect ratio
                         h_a_new = w_a_new / r_a
-                        coords_a = [[x1_a, y1_a], [x1_a + w_a_new, y1_a], [x1_a, y1_a + h_a_new], [x1_a + w_a_new, y1_a + h_a_new]]
+                        coords_a = [
+                            [x1_a, y1_a], [x1_a + w_a_new, y1_a],
+                            [x1_a, y1_a + h_a_new], [x1_a + w_a_new, y1_a + h_a_new]
+                        ]
+                        # Resize Visualization (B), anchored at bottom-right
                         if x1_b < kg_x:
-                            w_b = kg_width
+                            w_b = kg_width  # Max width if exceeding left edge
                         if y1_b < y_VG:
-                            h_b = h_KG
-                        if x1_b < kg_x + w_highlight and y1_b < y_VG + 2.0 * x:
+                            h_b = h_KG  # Max height if exceeding top
+                        # Initial aspect ratio adjustment
+                        w_b_new = min(w_b, h_b * r_b)
+                        h_b_new = w_b_new / r_b
+                        # Check Highlight overlap and scale if necessary
+                        x1_b_tentative = x2_b - w_b_new  # Tentative left edge
+                        y1_b_tentative = y2_b - h_b_new  # Tentative top edge
+                        if x1_b_tentative < kg_x + w_highlight and y1_b_tentative < y_VG + h_highlight:
                             ratio_x = (kg_width - w_highlight) / w_b
-                            ratio_y = (h_KG - 2.0 * x) / h_b
+                            ratio_y = (h_KG - h_highlight) / h_b
                             scale = max(ratio_x, ratio_y)
                             w_b_new = w_b * scale
                             h_b_new = h_b * scale
-                        else:
-                            w_b_new = w_b
-                            h_b_new = h_b
+                        # Check if Icon's bottom-right corner overlaps Visualization's top-left corner
+                        x1_b_tentative = x2_b - w_b_new  # Recalculate tentative left edge after scaling
+                        y1_b_tentative = y2_b - h_b_new  # Recalculate tentative top edge
+                        if x1_a + w_a_new > x1_b_tentative and y1_a + h_a_new > y1_b_tentative:
+                            w_b_new = min(w_b_new, kg_x + kg_width - (x1_a + w_a_new))  # Limit width to avoid overlap
+                            h_b_new = w_b_new / r_b  # Recalculate height to maintain aspect ratio
+                        # Final coordinates for Visualization, anchored at bottom-right
                         x1_b_new = x2_b - w_b_new
                         y1_b_new = y2_b - h_b_new
-                        coords_b = [[x1_b_new, y1_b_new], [x2_b, y1_b_new], [x1_b_new, y2_b], [x2_b, y2_b]]
+                        coords_b = [
+                            [x1_b_new, y1_b_new], [x2_b, y1_b_new],
+                            [x1_b_new, y2_b], [x2_b, y2_b]
+                        ]
                     layout[VG_key][KG_key]["Icon"] = coords_a
                     layout[VG_key][KG_key]["Vis"] = coords_b
                     ### BEGIN ADDED CODE ###
@@ -455,20 +507,28 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                     w_highlight = min(calculate_text_width(highlight, 2.0 * x), kg_width)
                     if placement_idx == 0:
                         if x1 < kg_x + w_highlight:
-                            w_img = kg_width - (kg_x + w_highlight - x1)
+                            w_img = kg_width - w_highlight
                         if y2 > y_VG + h_KG:
                             h_img = h_KG - (y1 - y_VG)
+                        w_img_new = min(w_img, h_img * r)
+                        h_img_new = w_img_new / r
+                        coords = [
+                                [x2 - w_img_new, y1],  # New top-left
+                                [x2, y1],              # New top-right
+                                [x2 - w_img_new, y1 + h_img_new],              # New bottom-left
+                                [x2, y1 + h_img_new]                           # Bottom-right (fixed)
+                            ]
                     elif placement_idx == 1:
                         if x2 > kg_x + kg_width:
                             w_img = kg_width - (x1 - kg_x)
                         if y2 > y_VG + h_KG:
                             h_img = h_KG - (y1 - y_VG)
-                    w_img_new = min(w_img, h_img * r)
-                    h_img_new = w_img_new / r
-                    coords = [
-                        [x1, y1], [x1 + w_img_new, y1],
-                        [x1, y1 + h_img_new], [x1 + w_img_new, y1 + h_img_new]
-                    ]
+                        w_img_new = min(w_img, h_img * r)
+                        h_img_new = w_img_new / r
+                        coords = [
+                            [x1, y1], [x1 + w_img_new, y1],
+                            [x1, y1 + h_img_new], [x1 + w_img_new, y1 + h_img_new]
+                        ]
                     layout[VG_key][KG_key]["Icon"] = coords
                     ### BEGIN ADDED CODE ###
                     layout[VG_key][KG_key]["placement_type"] = 'a' if placement_idx == 0 else 'b'
@@ -501,20 +561,28 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                     w_highlight = min(calculate_text_width(highlight, 2.0 * x), kg_width)
                     if placement_idx == 0:
                         if x1 < kg_x + w_highlight:
-                            w_img = kg_width - (kg_x + w_highlight - x1)
+                            w_img = kg_width - w_highlight
                         if y2 > y_VG + h_KG:
                             h_img = h_KG - (y1 - y_VG)
+                        w_img_new = min(w_img, h_img * r)
+                        h_img_new = w_img_new / r
+                        coords = [
+                                [x2 - w_img_new, y1],  # New top-left
+                                [x2, y1],              # New top-right
+                                [x2 - w_img_new, y1 + h_img_new],              # New bottom-left
+                                [x2, y1 + h_img_new]                           # Bottom-right (fixed)
+                            ]
                     elif placement_idx == 1:
                         if x2 > kg_x + kg_width:
                             w_img = kg_width - (x1 - kg_x)
                         if y2 > y_VG + h_KG:
                             h_img = h_KG - (y1 - y_VG)
-                    w_img_new = min(w_img, h_img * r)
-                    h_img_new = w_img_new / r
-                    coords = [
-                        [x1, y1], [x1 + w_img_new, y1],
-                        [x1, y1 + h_img_new], [x1 + w_img_new, y1 + h_img_new]
-                    ]
+                        w_img_new = min(w_img, h_img * r)
+                        h_img_new = w_img_new / r
+                        coords = [
+                            [x1, y1], [x1 + w_img_new, y1],
+                            [x1, y1 + h_img_new], [x1 + w_img_new, y1 + h_img_new]
+                        ]
                     layout[VG_key][KG_key]["Vis"] = coords
                     ### BEGIN AD enhanced CODE ###
                     layout[VG_key][KG_key]["placement_type"] = 'a' if placement_idx == 0 else 'b'
@@ -578,47 +646,47 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                 x2_a, y2_a = icon_coords[3]
                 x1_b, y1_b = vis_coords[0]
                 x2_b, y2_b = vis_coords[3]
-                if y2_highlight <= y2_a <= y2_b:
-                    possible_blocks = [
-                        [(x1_KG, y2_highlight), (x1_a, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x1_KG, y2_a), (x1_b, y2_KG)],
-                        [(x1_KG, y2_b), (x2_KG, y2_KG)]
-                    ]
-                elif y2_highlight <= y2_b <= y2_a:
-                    possible_blocks = [
-                        [(x1_KG, y2_highlight), (x1_a, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x1_KG, y2_a), (x2_KG, y2_KG)],
-                        [(x2_a, y2_b), (x2_KG, y2_KG)]
-                    ]
-                elif y2_a <= y2_highlight <= y2_b:
+                if y2_highlight <= y2_b <= y2_a:
                     possible_blocks = [
                         [(x1_KG, y2_highlight), (x1_b, y2_KG)],
-                        [(x1_KG, y2_b), (x2_KG, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x2_highlight, y2_a), (x1_b, y2_KG)]
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x1_KG, y2_b), (x1_a, y2_KG)],
+                        [(x1_KG, y2_a), (x2_KG, y2_KG)]
                     ]
-                elif y2_a <= y2_b <= y2_highlight:
+                elif y2_highlight <= y2_a <= y2_b:
                     possible_blocks = [
-                        [(x1_KG, y2_highlight), (x2_KG, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x2_highlight, y2_a), (x1_b, y2_KG)],
-                        [(x2_highlight, y2_b), (x2_KG, y2_KG)]
+                        [(x1_KG, y2_highlight), (x1_b, y2_KG)],
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x1_KG, y2_b), (x2_KG, y2_KG)],
+                        [(x2_b, y2_a), (x2_KG, y2_KG)]
                     ]
                 elif y2_b <= y2_highlight <= y2_a:
                     possible_blocks = [
-                        [(x1_KG, y2_highlight), (x2_a, y2_KG)],
+                        [(x1_KG, y2_highlight), (x1_a, y2_KG)],
                         [(x1_KG, y2_a), (x2_KG, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x1_b, y2_b), (x2_KG, y2_KG)]
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x2_highlight, y2_b), (x1_a, y2_KG)]
                     ]
                 elif y2_b <= y2_a <= y2_highlight:
                     possible_blocks = [
                         [(x1_KG, y2_highlight), (x2_KG, y2_KG)],
-                        [(x2_highlight, y1_KG), (x1_a, y2_KG)],
-                        [(x2_highlight, y2_a), (x2_KG, y2_KG)],
-                        [(x1_b, y2_b), (x2_KG, y2_KG)]
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x2_highlight, y2_b), (x1_a, y2_KG)],
+                        [(x2_highlight, y2_a), (x2_KG, y2_KG)]
+                    ]
+                elif y2_a <= y2_highlight <= y2_b:
+                    possible_blocks = [
+                        [(x1_KG, y2_highlight), (x2_b, y2_KG)],
+                        [(x1_KG, y2_b), (x2_KG, y2_KG)],
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x1_a, y2_a), (x2_KG, y2_KG)]
+                    ]
+                elif y2_a <= y2_b <= y2_highlight:
+                    possible_blocks = [
+                        [(x1_KG, y2_highlight), (x2_KG, y2_KG)],
+                        [(x2_highlight, y1_KG), (x1_b, y2_KG)],
+                        [(x2_highlight, y2_b), (x2_KG, y2_KG)],
+                        [(x1_a, y2_a), (x2_KG, y2_KG)]
                     ]
             elif placement_type == 'comb2':
                 x1_a, y1_a = icon_coords[0]
@@ -805,7 +873,8 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
                     ]
             else:  # No placement (no Icon or Vis)
                 possible_blocks = [
-                    [(x1_KG, y2_highlight), (x2_KG, y2_KG)]
+                    [(x1_KG, y2_highlight), (x2_KG, y2_KG)],
+                    [(x2_highlight, y1_KG), (x2_KG, y2_KG)]
                 ]
 
             # Find the block with maximum area
@@ -859,7 +928,7 @@ def layout_poster(valentine_data, W, H, margin=0, vertical_margin=0):
         for KG in knowledges:
             text = KG["knowledge_content"]
             highlight = KG["first_level_highlight"]
-            n_images = (1 if (KG["icon_keyword"] != "" or KG["icon_keyword"] is not None ) else 0) + (1 if KG["visualization"]["is_visualization"] else 0)
+            n_images = (1 if KG["icon_keyword"] != "" else 0) + (1 if KG["visualization"]["is_visualization"] else 0)
             s_text = calculate_text_width(text, 1.0)
             s_highlight = calculate_text_width(highlight, 1.0)
             s_KG = s_text + 4 * s_highlight + s_text * n_images

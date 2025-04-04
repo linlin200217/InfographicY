@@ -33,8 +33,8 @@ def hello():
 
 @app.post("/upload",response_model=ParserResult)
 def upload_pdf(question: str = Form(...), file: UploadFile = File(...)):
-    '''
     
+    '''
      if file.filename and not file.filename.endswith(".pdf"):
          raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
@@ -72,6 +72,7 @@ def generate_icon(item:IconItem):
     base_url='https://external.api.recraft.ai/v1',
     api_key=os.getenv("RECRAFT_KEY"),
   )
+
   response = client.images.generate(
     model='recraftv2',
     prompt=item.keyword,
