@@ -10,6 +10,9 @@ from icon import scale_creation
 from pydantic import BaseModel
 import requests
 
+import time
+import requests
+
 from util import reorder_valentine_data
 load_dotenv()
 
@@ -33,7 +36,7 @@ def hello():
 
 @app.post("/upload",response_model=ParserResult)
 def upload_pdf(question: str = Form(...), file: UploadFile = File(...)):
-    
+       
     '''
      if file.filename and not file.filename.endswith(".pdf"):
          raise HTTPException(status_code=400, detail="Only PDF files are allowed")
@@ -52,7 +55,7 @@ def upload_pdf(question: str = Form(...), file: UploadFile = File(...)):
      pdf_parser = PdfParser(file_path, question, client)
      return pdf_parser.run()
     
-    '''    
+    '''      
      #先用假数据
     with open("result.json", "r",encoding="utf-8") as f:
         data = json.load(f)
@@ -66,39 +69,70 @@ class IconItem(BaseModel):
     coordinates: list[list[float]]
 
 @app.post("/icon")
-def generate_icon(item:IconItem):
-  color_controls = [{'rgb': rgb} for rgb in item.colorlist]
-  client = OpenAI(
-    base_url='https://external.api.recraft.ai/v1',
-    api_key=os.getenv("RECRAFT_KEY"),
-  )
-
-  response = client.images.generate(
-    model='recraftv2',
-    prompt=item.keyword,
-    style='icon',
-    n=1,
-    size= scale_creation(item.coordinates),
-    extra_body={
-        'controls': {
-            'colors': color_controls
-        }
-      }
+def generate_icon(item: IconItem):
+    # 构建颜色控制列表
+    color_controls = [{'rgb': rgb} for rgb in item.colorlist]
+    
+    client = OpenAI(
+        base_url='https://external.api.recraft.ai/v1',
+        api_key=os.getenv("RECRAFT_KEY"),
     )
+    
+    max_retries = 5   # 最大重试次数
+    delay = 1         # 初始等待时间（秒）
+    
+    # 重试调用生成图像接口
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = client.images.generate(
+                model='recraftv2',
+                prompt=item.keyword,
+                style='icon',
+                n=1,
+                size=scale_creation(item.coordinates),
+                extra_body={
+                    'controls': {
+                        'colors': color_controls
+                    }
+                }
+            )
+            # 成功获取响应，退出重试循环
+            break
+        except Exception as e:
+            print(f"第 {attempt} 次生成图像请求失败：{e}")
+            if attempt == max_retries:
+                raise e
+            time.sleep(delay)
+            delay *= 2  # 指数退避
+    
+    # 获取返回的 SVG URL
+    svg_url = response.data[0].url
+    print("获取到的 SVG URL:", svg_url)
+    
+    # 重置重试参数，开始下载 SVG 文件内容
+    delay = 1
+    for attempt in range(1, max_retries + 1):
+        try:
+            svg_response = requests.get(svg_url)
+            if svg_response.status_code == 200:
+                # 将 SVG 内容保存到本地文件
+                with open('output.svg', 'wb') as file:
+                    file.write(svg_response.content)
+                print("SVG 文件已保存为 output.svg")
+                return svg_response.content
+            else:
+                print(f"第 {attempt} 次下载 SVG 失败，状态码：{svg_response.status_code}")
+        except Exception as e:
+            print(f"第 {attempt} 次下载 SVG 请求失败：{e}")
+        
+        if attempt == max_retries:
+            print("达到最大重试次数，下载 SVG 失败")
+            break
+        time.sleep(delay)
+        delay *= 2  # 指数退避
 
-  # 获取返回的 SVG URL
-  svg_url = response.data[0].url
+    return None
 
-  # 下载 SVG 文件内容
-  svg_response = requests.get(svg_url)
-  if svg_response.status_code == 200:
-    # 将 SVG 内容保存到本地文件
-      with open('output.svg', 'wb') as file:
-        file.write(svg_response.content)
-      print("SVG 文件已保存为 output.svg")
-      return svg_response.content
-  else:
-      print("下载 SVG 失败，状态码：", svg_response.status_code)
       
 
 
@@ -133,6 +167,9 @@ def layout_poster(type:str,valentine_data:dict, W, H, margin=0, vertical_margin=
         return layout_poster(valentine_data, W, H, margin, vertical_margin)
     elif type == "star" or type == "Star":
         from star import layout_poster
+        return layout_poster(valentine_data, W, H, margin, vertical_margin)
+    elif type == "spiral" or type == "Spiral":
+        from spiral import layout_poster
         return layout_poster(valentine_data, W, H, margin, vertical_margin)
     else:
         raise ValueError("Invalid type")

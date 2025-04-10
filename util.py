@@ -890,6 +890,7 @@ def Rank_Template(visual_group_count, knowledge_count, related_subtask_count, re
     # 返回类型名称列表，按最终排序顺序排列
     sorted_types = [k for k, v in sorted_scores]
     return sorted_types
+ 
 
 def reorder_valentine_data(valentine_data):
     """

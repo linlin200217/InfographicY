@@ -6,7 +6,7 @@ Data Insight Types:
 2. Difference: Explicit comparisons (e.g., "25% higher than").
 3. Proportion: Part-to-whole relationships (e.g., "28% of X", "1 in 10", "1/5").
 4. Trend: Time-bound changes (e.g., "grown by 40% annually", "increase", "decrease").
-5. Categorization: Must contain at least one discrete class (e.g., "Basic, Pro, Enterprise tiers").
+5. Categorization:  (e.g., "Basic, Pro, Enterprise tiers").
 6. Distribution: Data spread (e.g., "peaks at 20–34 years").
 7. Rank: Ordered hierarchy (e.g., "ranks first").
 8. Extreme: Maxima/minima (e.g., "hottest month ever").

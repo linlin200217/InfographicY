@@ -125,7 +125,7 @@
     {
       "subtask_title": "Influence of gender on survival rates",
       "subtask_content": "We also broke the data down by class and gender. Turns out, the blockbuster hit was right in terms of women getting onto the lifeboats first. Women had a much higher chance of survival—regardless of what class they were in—than men did. Of the 466 women on board, 339 survived. Of the 843 men on board, only 161 survived— a measly 19% compared to the 73% of women who made it safely back to shore.",
-      "subtask_relation": "Elaboration",
+      "subtask_relation": "Example",
       "related_subtask": {
         "title": "Survival rates based on class",
         "relation": "Similarity"
@@ -178,7 +178,7 @@
     {
       "subtask_title": "Effect of age on survival chances",
       "subtask_content": "Next, we wanted to determine how much age played a factor in whether or not someone survived the Titanic. According to our dataset, the oldest person aboard the Titanic was 80 years old while the youngest was just a few months. The women on board the ship were generally a bit younger than the men, the average age of the males was 30.6 while the average age of the females was 28.7. For men, the younger you were, the more likely you were to have survived the tragedy. For women, the older you were, the more likely you were to have survived.",
-      "subtask_relation": "Elaboration",
+      "subtask_relation": "Example",
       "related_subtask": {
         "title": "Influence of gender on survival rates",
         "relation": "Contrast"
@@ -237,7 +237,7 @@
     {
       "subtask_title": "Impact of family presence on survival",
       "subtask_content": "Were you alone onboard like Jack or surrounded by family (albeit people you may not want relations with..) like Rose? Would either scenario make you more likely to survive on that fateful night in April? The graph below breaks out not only the average number of family members but also the average number of spouses/siblings and parents/children aboard. Take a gander at the results: To no surprise, you had a better chance of survival if you had more family members aboard. It seems the presence of siblings or spouses had little to no bearing on your chances of getting out alive, as the average number is about the same for both those who perished and those who survived. Once again it seems like “women and children first,” as most Hollywood depictions show, may not have just been a trope.",
-      "subtask_relation": "Elaboration",
+      "subtask_relation": "Example",
       "related_subtask": {
         "title": "Effect of age on survival chances",
         "relation": "Similarity"

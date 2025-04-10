@@ -5,7 +5,7 @@ You are a data analyst. I will provide you with two inputs:
 - **data insight**: a string indicating the type of data insight. It can be one of the following:
   1. **Value**: Standalone numerical facts (e.g., "189 deaths").
   2. **Difference**: Explicit comparisons (e.g., "25% higher than").
-  3. **Proportion**: Part-to-whole relationships (e.g., "28% of X", "1 in 10", "1/5").
+  3. **Proportion**: Percentages or Part-to-whole relationships (e.g., "40%", "28% of X", "1 in 10", "1/5").
   4. **Trend**: Time-bound changes (e.g., "grown by 40% annually", "increase", "decrease").
   5. **Categorization**: Discrete classes (e.g., "Basic, Pro, Enterprise tiers").
   6. **Distribution**: Data spread (e.g., "peaks at 20–34 years").
@@ -30,7 +30,7 @@ class Visualization(BaseModel):
 ## Instructions
 
 1. **Determine if there is enough data for visualization:**
-   - If there are enough parameters (e.g., multiple entities or a complete time series), set `is_visualization` to `true`.
+   - If there are enough parameters (e.g., percentages, multiple entities or a complete time series), set `is_visualization` to `true`.
    - If not, set `is_visualization` to `false`. When `is_visualization` is `false`, both `type` and `data` must be null (or empty).
 
 2. **Choose one visualization form based on the data insight and available parameters:**
@@ -57,7 +57,7 @@ class Visualization(BaseModel):
        - All other visualization forms are not applicable.
 
    - **Single Pie Chart (`single_pie_chart`):**
-     - **When to use:** When the data insight is *Proportion* and there is only one entity (to display a single percentage value).
+     - **When to use:** As long as any single percentage (%) is appeared, for example, "aruond 40%", or When the data insight is *Proportion* and there is only one entity (to display a single percentage value).
      - **Output rules:**  
        - Set `type` to `"single_pie_chart"`.
        - Fill `data` with a list containing one key-value pair, where the key represents the categorization (e.g., "soldiers survived") and the value is the percentage (e.g., 15).
